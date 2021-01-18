@@ -1,10 +1,10 @@
 import * as discord from "discord.js"
 import * as dotenv from "dotenv"
-
 dotenv.config()
 
 // Modules
 import messageHandler from "./handlers/messagehandler"
+import {attachIsImage} from "./handlers/imagehandler";
 
 const client = new discord.Client()
 
@@ -25,6 +25,18 @@ client.on("ready", () => {
     messageHandler(client, ["status", "queue"], message => {
         message.channel.send("Pong")
     })
+
+    messageHandler(client, ["image"],message => {
+        if (message.attachments.size > 0) {
+            if (message.attachments.every(attachIsImage)){
+                //something
+                console.log("Images found...")
+            } else {
+                console.log("Images not found...")
+            }
+        }
+    })
+
 })
 
 client.login(process.env.DISCORD_BOT_TOKEN).then(() => {
