@@ -3,7 +3,8 @@ import {Client} from "discord.js";
 import * as dotenv from "dotenv";
 dotenv.config()
 
-export default function HandleMessage(client: Client, aliases: string[], callback) {
+/** Routes post-fixed words to their respective functions */
+export default function HandleMessage(client: Client, aliases: string[], callback : (msg : discord.Message) => any) {
     client.on("message", message => {
         const {content} = message
 

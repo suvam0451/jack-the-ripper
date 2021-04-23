@@ -2,3 +2,13 @@ node_modules/**
 .env
 yarn-error.log
 yarn.lock
+.idea/**
+
+# Intermediate files
+list.txt
+nsfw_list.txt
+sfw_list.txt
+og_list.txt
+
+# Contains secrets
+twit_config.ts

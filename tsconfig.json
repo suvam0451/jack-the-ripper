@@ -4,7 +4,8 @@
       "module": "commonjs",
       "outDir": "dist",
       "sourceMap": true,
-      "resolveJsonModule": true
+      "resolveJsonModule": true,
+      "esModuleInterop": true
     },
     "files": [
       "./node_modules/@types/mocha/index.d.ts",
@@ -15,5 +16,5 @@
     ],
     "exclude": [
       "node_modules"
-    ]
-  }
+    ],
+}
