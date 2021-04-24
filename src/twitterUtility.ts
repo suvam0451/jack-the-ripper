@@ -1,6 +1,6 @@
 import axios from "axios";
 import * as dotenv from "dotenv";
-
+import * as twitterAPI from "./requestHandlers/twitter";
 dotenv.config();
 
 type TweetMediaInfo = {
@@ -24,8 +24,7 @@ type TweetMediaInfo = {
 const MakeClient = () => {
   return axios.create({
     headers: {
-      Authorization:
-        `Bearer ${process.env.DISCORD_BEARER}`,
+      Authorization: `Bearer ${process.env.DISCORD_BEARER}`,
     },
     baseURL: "https://api.twitter.com/2",
   });
@@ -33,7 +32,8 @@ const MakeClient = () => {
 
 /** Helper function that actually converts the array of ids to a string request
  *  and fetches results */
-const FetchImageLinksForTweets_Helper = async (tweet_ids: string[]) => {
+export const FetchImageLinksForTweets_Helper = async (tweet_ids: string[]) => {
+  let retval: string[] = [];
   const tweet_ids_query = tweet_ids.reduce(
     (prev, curr, idx, entry) => prev + "," + curr
   );
@@ -45,12 +45,11 @@ const FetchImageLinksForTweets_Helper = async (tweet_ids: string[]) => {
       console.log(err);
     });
   if (res) {
-    const lines = res.data.includes.media.map((ele) => ele.url);
-    return lines;
-  } else {
-    let err: string[] = [];
-    return err;
+    if (res.data.includes) {
+      retval = retval.concat(res.data.includes.media.map((ele) => ele.url));
+    }
   }
+  return retval;
 };
 
 /** Retrieves image links attached to tweet(s)
@@ -58,14 +57,15 @@ const FetchImageLinksForTweets_Helper = async (tweet_ids: string[]) => {
  */
 export const FetchImageLinksForTweets = async (
   tweet_ids: string[],
+  task_id: string,
   batchSize?: number
-) => {
+): Promise<string[]> => {
   let retval: string[] = [];
   let BATCH_PROGRESS = 0;
   let TOTAL_SIZE = tweet_ids.length;
 
   if (batchSize) {
-      // Process after splitting by batches
+    // Process after splitting by batches
     while (BATCH_PROGRESS < TOTAL_SIZE) {
       let temporaryArr = tweet_ids.slice(
         BATCH_PROGRESS,
@@ -74,7 +74,13 @@ export const FetchImageLinksForTweets = async (
       let tmp = await FetchImageLinksForTweets_Helper(temporaryArr);
       retval = retval.concat(tmp);
       BATCH_PROGRESS += batchSize;
-      console.log(BATCH_PROGRESS);
+      // this is just a progress bar
+      console.log(
+        `progress(${task_id ? task_id : ""}): ${Math.min(
+          BATCH_PROGRESS,
+          TOTAL_SIZE
+        )}/${TOTAL_SIZE}`
+      );
     }
   } else {
     // If batch sizes is not provided, try to process all links together
@@ -120,3 +126,57 @@ export const FetchCurrentBatchTweetsById = async (
 
   return { data: stripMetadata, refresh_token: meta.next_token };
 };
+
+/** Retrieves  */
+export const FetchMediaLinksForId = async (
+  ID: string,
+  PAGINATION_LIMIT = 100
+) => {
+  let refreshToken = "";
+  let sfwLinks = [];
+  let nsfwLinks = [];
+  let tweet_counter = 0;
+  do {
+    let batchResult = await FetchCurrentBatchTweetsById(ID, refreshToken);
+    console.log(`Fetching page ${tweet_counter / 100 + 1}`);
+
+    const { data, refresh_token } = batchResult;
+    // Determine the set of sfw, nsfw and og content
+    let sfw = data.map((ele) => ele.id);
+    let nsfw = data
+      .filter((ele) => ele.possibly_sensitive)
+      .map((ele) => ele.id);
+
+    // Contat the results for next pagination attempt
+    sfwLinks = sfwLinks.concat(sfw);
+    nsfwLinks = nsfwLinks.concat(nsfw);
+    tweet_counter += 100;
+    refreshToken = refresh_token;
+  } while (refreshToken != "" && tweet_counter < PAGINATION_LIMIT);
+
+  // Promise.all([first, second]).then
+};
+
+/** Obtains twitter user metadata for a username.
+ *
+ * @returns onject {id, name, username} or null */
+export async function processTwitterUserByUsername(
+  username: string
+): Promise<{ id: string; name: string; username: string }> {
+  let retval;
+  await twitterAPI
+    .GetMetaFromUsername(username)
+    .then((res) => {
+      console.log("User actually found");
+      retval = res;
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  return retval;
+}
+
+/** Removes dead links from an array of media links */
+export function removeDeletedMediaLinks(links: string[]): string[] {
+  return links.filter((e) => e != undefined);
+}

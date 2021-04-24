@@ -5,6 +5,10 @@ dotenv.config();
 
 import * as util from "./utility";
 import * as twitUtil from "./twitterUtility";
+import * as twitterScraper from "./modules/twitterScraperModule";
+import * as generalUtil from "./modules/generalUtilityModule";
+import * as embedUtil from "./modules/discordEmbedGeneratorModule";
+import * as docsUtil from "./modules/documentationProvider";
 // Modules
 import msgHandler from "./handlers/messagehandler";
 import { attachIsImage } from "./handlers/imagehandler";
@@ -41,6 +45,10 @@ client.on("ready", async () => {
     // }
   });
 
+  msgHandler(client, ["h", "help", "docs"], (message) => {
+    docsUtil.provideBotDocs(message);
+  });
+
   msgHandler(client, ["rip", "ripper"], (message) => {
     message.channel.send("Greet the ripper !!!");
   });
@@ -56,6 +64,80 @@ client.on("ready", async () => {
         console.log("Images found...");
       } else {
         console.log("Images not found...");
+      }
+    }
+  });
+
+  msgHandler(client, ["twitter", "t"], async (message) => {
+    let params = message.content.split(" ");
+    if (params.length < 2) {
+      message.channel.send(
+        "400: You need to provide me a twitter username to scrape as second argument..."
+      );
+      return;
+    }
+
+    const USERNAME = params[1];
+    if (USERNAME == "help") {
+      docsUtil.provideTwitterScraperDocs(message);
+      return;
+    }
+
+    let res = await twitUtil.processTwitterUserByUsername(USERNAME);
+    console.log("processing request: ", res);
+    if (!res) message.channel.send("404: No twitter user exists with this id");
+    else {
+      let links = await twitterScraper.scrapeByTwitterID(res.id);
+      // remove dead links
+      links.sfw = links.sfw.filter((e) => e != undefined);
+      links.nsfw = links.nsfw.filter((e) => e != undefined);
+
+      let current_key = 0;
+      let maximum_key = links.nsfw.length;
+      if (links.nsfw.length > 1) {
+        let msgNode = await message.channel.send(
+          embedUtil.TwitterImageCarousal(
+            USERNAME,
+            links.nsfw[current_key],
+            current_key + 1,
+            maximum_key
+          )
+        );
+        await msgNode.react("🍎");
+        await msgNode.react("🍊");
+
+        let reaper = await msgNode.createReactionCollector(
+          (reaction, user) =>
+            reaction.emoji.name == "🍎" || reaction.emoji.name == "🍊",
+          { time: 360000 }
+        );
+        reaper.on("collect", (reaction, user) => {
+          let react = reaction.emoji.name;
+          if (react == "🍎") {
+            current_key = generalUtil.CircularOffset(
+              current_key,
+              maximum_key,
+              -1
+            );
+          } else if (react == "🍊") {
+            current_key = generalUtil.CircularOffset(
+              current_key,
+              maximum_key,
+              1
+            );
+          }
+
+          // Update image on embed
+          msgNode.edit(
+            embedUtil.TwitterImageCarousal(
+              USERNAME,
+              links.nsfw[current_key],
+              current_key + 1,
+              maximum_key
+            )
+          );
+          reaction.users.remove(user);
+        });
       }
     }
   });
@@ -101,7 +183,7 @@ client.on("ready", async () => {
 
     // Fetch image links for SFW tagged images
     let first = twitUtil
-      .FetchImageLinksForTweets(sfwLinks, 20)
+      .FetchImageLinksForTweets(sfwLinks, "sfw", 20)
       .then((tally) => {
         showcaseImages = tally;
         util.AppendLinesToFile(SFW_OUTPUT_FILE, tally);
@@ -109,7 +191,7 @@ client.on("ready", async () => {
 
     // Fetch image links for NSFW tagged images
     let second = twitUtil
-      .FetchImageLinksForTweets(nsfwLinks, 20)
+      .FetchImageLinksForTweets(nsfwLinks, "nsfw", 20)
       .then((tally) => {
         util.AppendLinesToFile(NSFW_OUTPUT_FILE, tally);
       });
@@ -126,8 +208,8 @@ client.on("ready", async () => {
         }
       );
       // msgNode.react('🍎');
-      await msgNode.react('🍎');
-      await msgNode.react('🍊');
+      await msgNode.react("🍎");
+      await msgNode.react("🍊");
 
       // msgNode.react(message.guild.emojis.cache.find(emoji => emoji.name === 'arrow_left'));
       // msgNode.react(message.guild.emojis.cache.find(emoji => emoji.name === 'arrow_right'));
