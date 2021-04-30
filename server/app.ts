@@ -1,6 +1,8 @@
 import express from "express";
 import * as bookController from "./controllers/bookController";
 import * as twitterUserController from "./controllers/twitterUserController";
+import * as youtubeRequestController from "./controllers/ytRequestController";
+
 const app = express();
 app.set("port", 3000);
 
@@ -17,6 +19,12 @@ app.get("/twitter/user/:id", twitterUserController.getUser);
 app.put("/twitter/user", twitterUserController.addUser);
 app.delete("/twitter/user/:id", twitterUserController.deleteUser);
 app.post("/twitter/user/:id", twitterUserController.updateUser);
+
+app.get("/youtube/requests", youtubeRequestController.allRequests);
+app.get("/youtube/requests/:id", youtubeRequestController.getRequest);
+app.put("/youtube/requests/:id", youtubeRequestController.addRequest);
+app.delete("/youtube/requests/:id", youtubeRequestController.deleteRequest);
+app.post("/youtube/requests/:id", youtubeRequestController.updateRequest);
 
 app.get("/", (req, res) => {
   res.send("Hello World");

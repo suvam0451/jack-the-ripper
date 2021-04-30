@@ -19,23 +19,6 @@ const Twitter = new Twit(require("../twit_config"));
 
 const client = new discord.Client();
 
-type TweetMediaInfo = {
-  data: {
-    attachments: {
-      media_keys: string[];
-    };
-    id: string;
-    text: string;
-  }[];
-  includes: {
-    media: {
-      media_key: string;
-      type: "photo";
-      url: string; // Url
-    }[];
-  };
-};
-
 client.on("ready", async () => {
   console.log("Client is ready");
   msgHandler(client, ["ping"], (message) => {
@@ -141,6 +124,10 @@ client.on("ready", async () => {
       }
     }
   });
+
+  msgHandler(client, ["mp3"], async (message)=> {
+    
+  })
 
   msgHandler(client, ["test"], async (message) => {
     // Generate the necessary temporary files

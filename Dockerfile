@@ -2,7 +2,7 @@ FROM node:latest
 
 WORKDIR /usr/src/app
 
-COPY package*.json ./ 'Cached docker layer'
+COPY package*.json ./
 RUN yarn install
 COPY . .
 
