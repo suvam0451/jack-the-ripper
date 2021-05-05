@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors"
 import * as bookController from "./controllers/bookController";
 import * as twitterUserController from "./controllers/twitterUserController";
 import * as youtubeRequestController from "./controllers/ytRequestController";
@@ -11,10 +12,11 @@ dotenv.config()
 
 const app = express();
 
+app.use(cors()) // Allow all requests
 app.use(express.json());
 
+// Connect to local MongoDB instance
 import { connectMongoose } from "./schemas/_util";
-
 connectMongoose()
 
 // Route Middlewares

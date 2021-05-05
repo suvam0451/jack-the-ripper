@@ -16,7 +16,7 @@ podman run -d -p 3000:3000 automemory-server  # 3000 port (left)
 
 # Database only
 podman pull mongo
-docker run --name automemory_db -d -p 27017:27017 mongo
+podman run --name automemory_db -d -p 27017:27017 mongo
 
 # Monitoring and closing
 podman ps
