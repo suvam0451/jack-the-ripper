@@ -1,7 +1,4 @@
 import mongoose from "mongoose"
-import { connectMongoose } from "./_util";
-
-connectMongoose()
 
 export const twitterUserSchema = new mongoose.Schema({
     username: {type: String, required: true},

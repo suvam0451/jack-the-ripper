@@ -3,10 +3,19 @@ import * as bookController from "./controllers/bookController";
 import * as twitterUserController from "./controllers/twitterUserController";
 import * as youtubeRequestController from "./controllers/ytRequestController";
 
+import authRoute from "./routes/auth"
+
 const app = express();
 app.set("port", 3000);
 
 app.use(express.json());
+
+import { connectMongoose } from "./schemas/_util";
+
+connectMongoose()
+
+// Route Middlewares
+app.use("/api/user", authRoute)
 
 app.get("/books", bookController.allBooks);
 app.get("/books/:id", bookController.getBook);

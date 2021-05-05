@@ -1,7 +1,4 @@
 import mongoose from "mongoose"
-import { connectMongoose } from "./_util";
-
-connectMongoose()
 
 type ytRequestStatus = "completed" | "pending" | "running"
 
