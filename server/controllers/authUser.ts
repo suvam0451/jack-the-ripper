@@ -92,11 +92,9 @@ export let userLogin: mongoHandler = async (req, res) => {
         }
 
         // Create and assing JWT
-        const token = jwt.sign({_id: emailExist._id}, process.env.JWT_PRIVATE_KEY)
-        return res.header("auth-token", token).send(token)
-
-        // const { code, text } = getErrorCodes(responseEnum.successLogin)
-        // return res.status(code).send(text)
+        const token = jwt.sign({ _id: emailExist._id }, process.env.JWT_PRIVATE_KEY)
+        const { code, text } = getErrorCodes(responseEnum.successLogin)
+        return res.status(code).header("Authorization", token).send({ token: token })
     }
 }
 

@@ -4,8 +4,9 @@ import * as dotenv from "dotenv";
 dotenv.config()
 
 export default function auth(req, res, next) {
-    const token = req.header("auth-token")
+    const token = req.header("Authorization")
     if (!token) {
+        // Deny access without token
         return res.status(401).send("Access Denied")
     }
 
@@ -13,8 +14,8 @@ export default function auth(req, res, next) {
         const verified = jwt.verify(token, process.env.JWT_PRIVATE_KEY)
         req.user = verified
         next()
-        // return res.status(200).send("Successful Private Route Access")
     } catch (err) {
+        // Deny access if token expired/failed-verification
         return res.status(400).send("Invalid Token")
     }
 }
