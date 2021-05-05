@@ -13,7 +13,6 @@ import * as docsUtil from "./modules/documentationProvider";
 import msgHandler from "./handlers/messagehandler";
 import { attachIsImage } from "./handlers/imagehandler";
 import Twit, { Response } from "twit";
-import { Url } from "node:url";
 
 const Twitter = new Twit(require("../twit_config"));
 

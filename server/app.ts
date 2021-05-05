@@ -3,10 +3,13 @@ import * as bookController from "./controllers/bookController";
 import * as twitterUserController from "./controllers/twitterUserController";
 import * as youtubeRequestController from "./controllers/ytRequestController";
 
-import authRoute from "./routes/auth"
+import authRoute from "./routes/authRoute"
+import gw2Route from "./routes/gw2Route"
+
+import * as dotenv from "dotenv";
+dotenv.config()
 
 const app = express();
-app.set("port", 3000);
 
 app.use(express.json());
 
@@ -15,7 +18,9 @@ import { connectMongoose } from "./schemas/_util";
 connectMongoose()
 
 // Route Middlewares
-app.use("/api/user", authRoute)
+app.use("/v1/user", authRoute)
+app.use("/v1/gw2", gw2Route)
+
 
 app.get("/books", bookController.allBooks);
 app.get("/books/:id", bookController.getBook);
@@ -39,6 +44,6 @@ app.get("/", (req, res) => {
   res.send("Hello World");
 });
 
-app.listen(app.get("port"), () => {
-  console.log("App is running on localhost", app.get("port"));
+app.listen(process.env.SERVER_PORT, () => {
+  console.log("App is running on localhost", process.env.SERVER_PORT);
 });
