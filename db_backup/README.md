@@ -1,0 +1,1 @@
+Map this folder as a volume into docker container and store/backup the mongo databases here

@@ -1,20 +1,19 @@
 version: "2"
 services:
     api:
-        image: automemory-client
+        image: automemory-server
         restart: always
         ports:
             - "4000:4000"
-        depends_on:
+        links:
             - database
         networks:
             webappnetwork
     database:
+        container_name: mongodb
         image: mongo
-        restart: always
-        # container_name: mongodb
         volumes:
-            - ./data-node:/data/db
+            - ./db_backup:/data/db
         ports:
             - 27017:27017
         command: mongod --noauth --smallfiles
