@@ -1,7 +1,7 @@
 version: "2"
 services:
     api:
-        image: automemory-server
+        image: automemory_server
         restart: always
         ports:
             - "4000:4000"
@@ -10,7 +10,7 @@ services:
         networks:
             webappnetwork
     database:
-        container_name: mongodb
+        container_name: automemory_mongo
         image: mongo
         volumes:
             - ./db_backup:/data/db
