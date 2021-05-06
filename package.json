@@ -35,6 +35,7 @@
     "start": "nodemon src/app.ts",
     "release": "standard-version",
     "test": "jest",
-    "serve": "nodemon server/app.ts"
+    "serve": "nodemon server/app.ts",
+    "deploy": "docker-compose up -d"
   }
 }
