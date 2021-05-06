@@ -6,13 +6,13 @@ services:
         ports:
             - "4000:4000"
         depends_on:
-            - mongodb
+            - database
         networks:
             webappnetwork
     database:
         image: mongo
         restart: always
-        container_name: mongodb
+        # container_name: mongodb
         volumes:
             - ./data-node:/data/db
         ports:
