@@ -154,34 +154,34 @@ client.on("ready", async () => {
       return;
     }
     switch (params[0]) {
+      case "search": {
+        if (!paramsAdequate(message, numParams, 2)) return;
+        gelbooruSearchModule(message, params[1]);
+        break;
+      }
+      case "tag":
       case "tags": {
         if (!paramsAdequate(message, numParams, 2)) return;
-        APIClient()
-          .get<any, AxiosResponse<IGelbooruSearch[]>>(
-            `/gelbooru/search/tags/${params[1]}`
-          )
-          .then(async (res) => {
-            if (res.status == 200) {
-              let freshData = res.data
-                .filter((o) => o.count > 0)
-                .sort((a, b) => b.count - a.count);
-
-              let msgNode = await message.channel.send(
-                embedUtil.GelbooruSearchResultCarousal(freshData, 0)
-              );
-            }
-          });
+        gelbooruSearchModule(message, params[1], "tag");
+        break;
+      }
+      case "character":
+      case "char": {
+        if (!paramsAdequate(message, numParams, 2)) return;
+        gelbooruSearchModule(message, params[1], "character");
+        break;
+      }
+      case "artist": {
+        if (!paramsAdequate(message, numParams, 2)) return;
+        gelbooruSearchModule(message, params[1], "artist");
+        break;
+      }
+      case "copyright": {
+        if (!paramsAdequate(message, numParams, 2)) return;
+        gelbooruSearchModule(message, params[1], "copyright");
         break;
       }
 
-      case "characters": {
-        if (!paramsAdequate(message, numParams, 2)) return;
-        APIClient()
-          .get<any, AxiosResponse<IGelbooruSearch[]>>(
-            `/gelbooru/search/characters/${params[1]}`
-          )
-          .then(async (res) => {});
-      }
       case "nsfw": {
         const query = params[1];
         APIClient()
@@ -220,6 +220,39 @@ client.on("ready", async () => {
 
   msgHandler(client, ["version"], (msg) => {});
 });
+
+/** handles gelbooru search */
+const gelbooruSearchModule = (
+  message: discord.Message,
+  searchterm: string,
+  mask: string = ""
+) => {
+  const maskQuery = mask == "" ? "" : `&mask=${mask}`;
+
+  APIClient()
+    .get<any, AxiosResponse<IGelbooruSearch[]>>(
+      `/gelbooru/search/tags/${searchterm}${maskQuery}`
+    )
+    .then(async (res) => {
+      let freshData: IGelbooruSearch[] = res.data.map((ele) => {
+        // discord would try to collapse two underscores into italic text
+        ele.tag = ele.tag.split('_').join("\\_")
+        return ele;
+      });
+      let chunks: IGelbooruSearch[][] = [];
+      const CHUNK_SIZE = 20;
+
+      // slice into equal chunk arrays
+      for (let index = 0; index < freshData.length; index += CHUNK_SIZE)
+        chunks.push(freshData.slice(index, index + CHUNK_SIZE));
+
+      attachPagination<IGelbooruSearch[]>(
+        message,
+        chunks,
+        embedUtil.GelbooruSearchResultCarousal
+      );
+    });
+};
 
 client.login(config.server.token).then(() => {
   console.log("Logged in successfully !");

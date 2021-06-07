@@ -5,7 +5,10 @@
       "outDir": "dist",
       "sourceMap": true,
       "resolveJsonModule": true,
-      "esModuleInterop": true
+      "esModuleInterop": true,
+      "lib": [
+        "ESNext.String"
+      ]
     },
     "include": [
       "src/**/*.ts",
@@ -14,4 +17,5 @@
     "exclude": [
       "node_modules"
     ],
+
 }

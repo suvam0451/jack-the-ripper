@@ -17,20 +17,18 @@ export const TwitterImageCarousal = (
 
 export const GelbooruSearchResultCarousal = (
   links: IGelbooruSearch[],
-  page: 0,
-  per_page = 20
+  currPage: number,
+  maxPage: number
 ) => {
   let desc = "";
   links.forEach((link, i) => {
     const idString = link.id.toString().padStart(7, " ");
-
-    if (i + 1 > per_page * page && i + 1 <= per_page * (page + 1))
-      desc = desc.concat(`${idString} -- ${link.tag} (${link.count}) \n`);
+    desc = desc.concat(`${idString} -- ${link.tag} (${link.count}) \n`);
   });
 
   return new discord.MessageEmbed()
     .setTitle("Search results")
-    .setDescription(desc);
+    .setDescription("```" + `${desc}` + "```");
 };
 
 export const DanbooruImageBrowser = (
